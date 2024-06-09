@@ -150,7 +150,7 @@ class ProtectedRouteAPI(MethodView):
     API endpoint for accessing a protected route.
     """
 
-    @jwt_required()
+    @jwt_required
     def get(self):
         """
         Handle GET requests for the protected route.

@@ -1,9 +1,10 @@
 from flask import Flask
 
 from app.blueprints.auth import auth_bp
-from app.blueprints.recipe.routes import recipe_bp  # Corrected the import path
+from app.blueprints.recipe.routes import recipe_bp
 from app.config import Config
 from app.extensions import db, jwt, login_manager, migrate
+from app.models import Ingredient, Recipe, RecipeIngredient, User
 
 
 def create_app(config_class=Config):
@@ -29,5 +30,9 @@ def create_app(config_class=Config):
     # Register blueprints
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(recipe_bp, url_prefix="/api/recipes")
+
+    # Register models
+    with app.app_context():
+        db.create_all()
 
     return app
