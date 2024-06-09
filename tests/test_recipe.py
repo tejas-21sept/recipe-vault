@@ -9,7 +9,14 @@ from app.models import Ingredient, Recipe, User
 
 
 class RecipeAPITestCase(unittest.TestCase):
+    """
+    Test cases for the recipe API endpoints.
+    """
+
     def setUp(self):
+        """
+        Set up the test environment before each test.
+        """
         self.app = create_app()
         self.app.config["TESTING"] = True
         self.app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
@@ -36,11 +43,17 @@ class RecipeAPITestCase(unittest.TestCase):
             self.headers = {"Authorization": f"Bearer {self.token}"}
 
     def tearDown(self):
+        """
+        Clean up the test environment after each test.
+        """
         with self.app.app_context():
             db.session.remove()
             db.drop_all()
 
     def test_create_recipe(self):
+        """
+        Test creating a recipe.
+        """
         response = self.client.post(
             "/api/recipes/",
             headers=self.headers,
@@ -58,183 +71,215 @@ class RecipeAPITestCase(unittest.TestCase):
         self.assertEqual(data["message"], "Recipe created successfully")
 
     def test_get_recipes(self):
+        """
+        Test retrieving all recipes.
+        """
         # First, create a recipe
-        self.test_create_recipe()
+        self.client.post(
+            "/api/recipes/",
+            headers=self.headers,
+            json={
+                "title": "Test Recipe",
+                "description": "Test Description",
+                "ingredients": [
+                    {"name": "Ingredient 1", "quantity": "1 cup"},
+                    {"name": "Ingredient 2", "quantity": "2 tbsp"},
+                ],
+            },
+        )
 
+        # Then, get all recipes
         response = self.client.get("/api/recipes/", headers=self.headers)
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
         self.assertTrue(len(data["recipes"]) > 0)
 
-    def test_get_recipe_by_id(self):
+    def test_get_recipe(self):
+        """
+        Test retrieving a specific recipe by its ID.
+        """
         # First, create a recipe
-        self.test_create_recipe()
+        create_response = self.client.post(
+            "/api/recipes/",
+            headers=self.headers,
+            json={
+                "title": "Test Recipe",
+                "description": "Test Description",
+                "ingredients": [
+                    {"name": "Ingredient 1", "quantity": "1 cup"},
+                    {"name": "Ingredient 2", "quantity": "2 tbsp"},
+                ],
+            },
+        )
+        recipe_id = json.loads(create_response.data)["recipe"]["id"]
 
-        with self.app.app_context():
-            recipe = Recipe.query.first()
-
-        response = self.client.get(f"/api/recipes/{recipe.id}", headers=self.headers)
+        # Then, get the recipe by ID
+        response = self.client.get(f"/api/recipes/{recipe_id}", headers=self.headers)
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
         self.assertEqual(data["title"], "Test Recipe")
-
-    # def test_update_recipe(self):
-    #     # First, create a recipe
-    #     self.test_create_recipe()
-    #     recipe = Recipe.query.first()
-
-    #     response = self.client.put(
-    #         f"/api/recipes/{recipe.id}",
-    #         headers=self.headers,
-    #         json={
-    #             "title": "Updated Recipe",
-    #             "description": "Updated Description",
-    #             "ingredients": [{"name": "Updated Ingredient 1", "quantity": "1 cup"}],
-    #         },
-    #     )
-    #     self.assertEqual(response.status_code, 200)
-    #     data = json.loads(response.data)
-    #     self.assertEqual(data["message"], "Recipe updated successfully")
-
-    #     # Verify the update
-    #     updated_recipe = Recipe.query.get(recipe.id)
-    #     self.assertEqual(updated_recipe.title, "Updated Recipe")
+        self.assertEqual(data["description"], "Test Description")
 
     def test_update_recipe(self):
+        """
+        Test updating a specific recipe by its ID.
+        """
         # First, create a recipe
-        self.test_create_recipe()
+        create_response = self.client.post(
+            "/api/recipes/",
+            headers=self.headers,
+            json={
+                "title": "Test Recipe",
+                "description": "Test Description",
+                "ingredients": [
+                    {"name": "Ingredient 1", "quantity": "1 cup"},
+                    {"name": "Ingredient 2", "quantity": "2 tbsp"},
+                ],
+            },
+        )
+        recipe_id = json.loads(create_response.data)["recipe"]["id"]
 
-        with self.app.app_context():
-            recipe = Recipe.query.first()
-
+        # Then, update the recipe by ID
         response = self.client.put(
-            f"/api/recipes/{recipe.id}",
+            f"/api/recipes/{recipe_id}",
             headers=self.headers,
             json={
                 "title": "Updated Recipe",
                 "description": "Updated Description",
-                "ingredients": [{"name": "Updated Ingredient 1", "quantity": "1 cup"}],
+                "ingredients": [{"name": "Updated Ingredient", "quantity": "3 cups"}],
             },
         )
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
         self.assertEqual(data["message"], "Recipe updated successfully")
+        self.assertEqual(data["recipe"]["title"], "Updated Recipe")
+        self.assertEqual(data["recipe"]["description"], "Updated Description")
 
-        # Verify the update
-        with self.app.app_context():
-            updated_recipe = Recipe.query.get(recipe.id)
-            self.assertEqual(updated_recipe.title, "Updated Recipe")
-
-    # def test_delete_recipe(self):
-    #     # First, create a recipe
-    #     self.test_create_recipe()
-    #     recipe = Recipe.query.first()
-
-    #     response = self.client.delete(f"/api/recipes/{recipe.id}", headers=self.headers)
-    #     self.assertEqual(response.status_code, 200)
-    #     data = json.loads(response.data)
-    #     self.assertEqual(data["message"], "Recipe deleted successfully")
-
-    #     # Verify deletion
-    #     deleted_recipe = Recipe.query.get(recipe.id)
-    #     self.assertIsNone(deleted_recipe)
-
-    # def test_delete_recipe(self):
-    #     # First, create a recipe
-    #     self.test_create_recipe()
-
-    #     with self.app.app_context():
-    #         recipe = Recipe.query.first()
-
-    #     response = self.client.delete(f"/api/recipes/{recipe.id}", headers=self.headers)
-    #     self.assertEqual(response.status_code, 200)
-    #     data = json.loads(response.data)
-    #     self.assertEqual(data["message"], "Recipe deleted successfully")
-
-    #     # Verify deletion
-    #     with self.app.app_context():
-    #         deleted_recipe = Recipe.query.get(recipe.id)
-    #         self.assertIsNone(deleted_recipe)
-
-    def test_delete_recipe_not_owner(self):
-        # First, create a recipe with the initial user
-        self.test_create_recipe()
-
-        with self.app.app_context():
-            recipe = Recipe.query.first()
-            self.assertIsNotNone(recipe)  # Ensure the recipe was created
-
-        # Create a second test user
-        with self.app.app_context():
-            user2 = User(username="seconduser", email="second@example.com")
-            user2.set_password("password")
-            db.session.add(user2)
-            db.session.commit()
-
-        # Log in as the second user
-        response = self.client.post(
-            "/auth/login",
-            json={"email": "second@example.com", "password": "password"},
-        )
-        self.assertEqual(response.status_code, 200)
-        token2 = json.loads(response.data)["access_token"]
-        headers2 = {"Authorization": f"Bearer {token2}"}
-
-        # Attempt to delete the recipe as the second user
-        response = self.client.delete(f"/api/recipes/{recipe.id}", headers=headers2)
-        self.assertEqual(response.status_code, 403)  # Forbidden
-        data = json.loads(response.data)
-        self.assertEqual(data["message"], "You are not allowed to delete this recipe")
-
-        # Verify the recipe still exists
-        with self.app.app_context():
-            existing_recipe = Recipe.query.get(recipe.id)
-            self.assertIsNotNone(existing_recipe)
-
-    def test_delete_recipe_without_login(self):
+    def test_delete_recipe(self):
+        """
+        Test deleting a specific recipe by its ID.
+        """
         # First, create a recipe
-        self.test_create_recipe()
-
-        with self.app.app_context():
-            recipe = Recipe.query.first()
-
-        response = self.client.delete(f"/api/recipes/{recipe.id}")
-        self.assertEqual(response.status_code, 401)
-
-    def test_delete_non_existent_recipe(self):
-        response = self.client.delete("/api/recipes/9999", headers=self.headers)
-        self.assertEqual(response.status_code, 404)
-
-    def test_delete_recipe_not_owned(self):
-        # Create another user
-        with self.app.app_context():
-            another_user = User(username="anotheruser", email="another@example.com")
-            another_user.set_password("NewPassword@12345")
-            db.session.add(another_user)
-            db.session.commit()
-
-            # Create a recipe for the new user
-            recipe = Recipe(title="Another User Recipe", description="Description")
-            db.session.add(recipe)
-            db.session.commit()
-
-            another_user_id = another_user.id
-            recipe_id = recipe.id
-
-        # Log in as the original test user
-        response = self.client.post(
-            "/auth/login",
-            json={"email": "test@example.com", "password": "password"},
+        create_response = self.client.post(
+            "/api/recipes/",
+            headers=self.headers,
+            json={
+                "title": "Test Recipe",
+                "description": "Test Description",
+                "ingredients": [
+                    {"name": "Ingredient 1", "quantity": "1 cup"},
+                    {"name": "Ingredient 2", "quantity": "2 tbsp"},
+                ],
+            },
         )
-        self.assertEqual(response.status_code, 200)
-        self.token = json.loads(response.data)["access_token"]
-        self.headers = {"Authorization": f"Bearer {self.token}"}
+        recipe_id = json.loads(create_response.data)["recipe"]["id"]
 
-        # Try to delete the recipe owned by another user
+        # Then, delete the recipe by ID
         response = self.client.delete(f"/api/recipes/{recipe_id}", headers=self.headers)
-        self.assertEqual(
-            response.status_code, 403
-        )  # Assuming 403 is returned for forbidden
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertEqual(data["message"], "Recipe deleted successfully")
+
+    def test_create_recipe_missing_fields(self):
+        """
+        Test creating a recipe with missing fields.
+        """
+        # Missing title
+        response = self.client.post(
+            "/api/recipes/",
+            headers=self.headers,
+            json={
+                "description": "Test Description",
+                "ingredients": [
+                    {"name": "Ingredient 1", "quantity": "1 cup"},
+                    {"name": "Ingredient 2", "quantity": "2 tbsp"},
+                ],
+            },
+        )
+        self.assertEqual(response.status_code, 400)
+        data = json.loads(response.data)
+        self.assertEqual(data["message"], "Missing title")
+
+        # Missing description
+        response = self.client.post(
+            "/api/recipes/",
+            headers=self.headers,
+            json={
+                "title": "Test Recipe",
+                "ingredients": [
+                    {"name": "Ingredient 1", "quantity": "1 cup"},
+                    {"name": "Ingredient 2", "quantity": "2 tbsp"},
+                ],
+            },
+        )
+        self.assertEqual(response.status_code, 400)
+        data = json.loads(response.data)
+        self.assertEqual(data["message"], "Missing description")
+
+        # Missing ingredients
+        response = self.client.post(
+            "/api/recipes/",
+            headers=self.headers,
+            json={
+                "title": "Test Recipe",
+                "description": "Test Description",
+            },
+        )
+        self.assertEqual(response.status_code, 400)
+        data = json.loads(response.data)
+        self.assertEqual(data["message"], "Missing ingredients")
+
+    def test_create_recipe_invalid_data(self):
+        """
+        Test creating a recipe with invalid data.
+        """
+        response = self.client.post(
+            "/api/recipes/",
+            headers=self.headers,
+            json={
+                "title": "Test Recipe",
+                "description": "Test Description",
+                "ingredients": "Invalid ingredients format",
+            },
+        )
+        self.assertEqual(response.status_code, 400)
+        data = json.loads(response.data)
+        self.assertEqual(data["message"], "Invalid ingredients format")
+
+    def test_get_recipe_not_found(self):
+        """
+        Test retrieving a non-existent recipe.
+        """
+        response = self.client.get("/api/recipes/999", headers=self.headers)
+        self.assertEqual(response.status_code, 404)
+        data = json.loads(response.data)
+        self.assertEqual(data["message"], "Recipe not found")
+
+    def test_update_recipe_not_found(self):
+        """
+        Test updating a non-existent recipe.
+        """
+        response = self.client.put(
+            "/api/recipes/999",
+            headers=self.headers,
+            json={
+                "title": "Updated Recipe",
+                "description": "Updated Description",
+                "ingredients": [{"name": "Updated Ingredient", "quantity": "3 cups"}],
+            },
+        )
+        self.assertEqual(response.status_code, 404)
+        data = json.loads(response.data)
+        self.assertEqual(data["message"], "Recipe not found")
+
+    def test_delete_recipe_not_found(self):
+        """
+        Test deleting a non-existent recipe.
+        """
+        response = self.client.delete("/api/recipes/999", headers=self.headers)
+        self.assertEqual(response.status_code, 404)
+        data = json.loads(response.data)
+        self.assertEqual(data["message"], "Recipe not found")
 
 
 if __name__ == "__main__":

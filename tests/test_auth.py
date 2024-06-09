@@ -1,3 +1,4 @@
+# tests/test_auth.py
 import os
 import unittest
 
@@ -9,7 +10,14 @@ from app.models import User
 
 
 class AuthTestCase(unittest.TestCase):
+    """
+    Test cases for the authentication functionalities.
+    """
+
     def setUp(self):
+        """
+        Set up the test environment before each test.
+        """
         self.app = create_app()
         self.app.config["TESTING"] = True
         self.app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
@@ -21,11 +29,17 @@ class AuthTestCase(unittest.TestCase):
             db.create_all()
 
     def tearDown(self):
+        """
+        Clean up the test environment after each test.
+        """
         with self.app.app_context():
             db.session.remove()
             db.drop_all()
 
     def test_register_user(self):
+        """
+        Test user registration with valid data.
+        """
         response = self.client.post(
             "/auth/register",
             data=json.dumps(
@@ -41,6 +55,9 @@ class AuthTestCase(unittest.TestCase):
         self.assertEqual(response.json["message"], "User registered successfully")
 
     def test_register_user_missing_fields(self):
+        """
+        Test user registration with missing fields.
+        """
         # Missing email
         response = self.client.post(
             "/auth/register",
@@ -71,6 +88,9 @@ class AuthTestCase(unittest.TestCase):
         self.assertEqual(response.json["message"], "Missing password")
 
     def test_login_user(self):
+        """
+        Test user login with valid credentials.
+        """
         with self.app.app_context():
             user = User(username="testuser", email="test@example.com")
             user.set_password("testpassword")
@@ -86,6 +106,9 @@ class AuthTestCase(unittest.TestCase):
         self.assertIn("access_token", response.json)
 
     def test_login_user_invalid(self):
+        """
+        Test user login with invalid credentials.
+        """
         with self.app.app_context():
             user = User(username="testuser", email="test@example.com")
             user.set_password("testpassword")
@@ -101,6 +124,9 @@ class AuthTestCase(unittest.TestCase):
         self.assertEqual(response.json["message"], "Invalid email or password")
 
     def test_logout_user(self):
+        """
+        Test user logout.
+        """
         with self.app.app_context():
             user = User(username="testuser", email="test@example.com")
             user.set_password("testpassword")
@@ -121,6 +147,9 @@ class AuthTestCase(unittest.TestCase):
         self.assertEqual(response.json["message"], "Logged out successfully")
 
     def test_register_user_existing_username(self):
+        """
+        Test registering a user with an existing username.
+        """
         # Register the first user
         response = self.client.post(
             "/auth/register",
@@ -152,6 +181,9 @@ class AuthTestCase(unittest.TestCase):
         self.assertEqual(response.json["message"], "Username already exists")
 
     def test_login_user_missing_credentials(self):
+        """
+        Test user login with missing credentials.
+        """
         # Missing email
         response = self.client.post(
             "/auth/login",
@@ -171,6 +203,9 @@ class AuthTestCase(unittest.TestCase):
         self.assertEqual(response.json["message"], "Missing email or password")
 
     def test_register_user_weak_password(self):
+        """
+        Test registering a user with a weak password.
+        """
         response = self.client.post(
             "/auth/register",
             data=json.dumps(
@@ -189,6 +224,9 @@ class AuthTestCase(unittest.TestCase):
         )
 
     def test_login_user_wrong_username(self):
+        """
+        Test user login with wrong username.
+        """
         with self.app.app_context():
             user = User(username="testuser", email="test@example.com")
             user.set_password("testpassword")
@@ -202,62 +240,6 @@ class AuthTestCase(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.json["message"], "Invalid email or password")
-
-    # def test_access_protected_route_after_logout(self):
-    #     with self.app.app_context():
-    #         user = User(username="testuser", email="test@example.com")
-    #         user.set_password("testpassword")
-    #         db.session.add(user)
-    #         db.session.commit()
-
-    #     response = self.client.post(
-    #         "/auth/login",
-    #         data=json.dumps({"email": "test@example.com", "password": "testpassword"}),
-    #         content_type="application/json",
-    #     )
-    #     access_token = response.json["access_token"]
-
-    #     response = self.client.post(
-    #         "/auth/logout", headers={"Authorization": f"Bearer {access_token}"}
-    #     )
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(response.json["message"], "Logged out successfully")
-
-    #     # Attempt to access a protected route after logout
-    #     response = self.client.get(
-    #         "/auth/protected_route", headers={"Authorization": f"Bearer {access_token}"}
-    #     )
-    #     self.assertEqual(response.status_code, 401)
-    #     self.assertEqual(response.json["message"], "Token has expired or is invalid")
-
-    # def test_access_protected_route_after_logout(self):
-    #     with self.app.app_context():
-    #         user = User(username="testuser", email="test@example.com")
-    #         user.set_password("testpassword")
-    #         db.session.add(user)
-    #         db.session.commit()
-
-    #     # Log in the user
-    #     response = self.client.post(
-    #         "/auth/login",
-    #         data=json.dumps({"email": "test@example.com", "password": "testpassword"}),
-    #         content_type="application/json",
-    #     )
-    #     access_token = response.json["access_token"]
-
-    #     # Log out the user
-    #     response = self.client.post(
-    #         "/auth/logout", headers={"Authorization": f"Bearer {access_token}"}
-    #     )
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(response.json["message"], "Logged out successfully")
-
-    #     # Attempt to access a protected route after logout
-    #     response = self.client.get(
-    #         "/auth/protected_route", headers={"Authorization": f"Bearer {access_token}"}
-    #     )
-    #     self.assertEqual(response.status_code, 401)
-    #     self.assertEqual(response.json["message"], "Token has expired or is invalid")
 
 
 if __name__ == "__main__":
