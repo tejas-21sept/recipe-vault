@@ -1,4 +1,4 @@
-# RecipeVault
+# Recipe Vault
 
 ## Objective
 
