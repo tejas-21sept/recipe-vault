@@ -21,6 +21,15 @@ The objective of this project is to create a comprehensive and feature-rich web 
 - **Update Recipe**: Users can update their own recipes.
 - **Delete Recipe**: Users can delete their own recipes.
 
+### Database Interactions
+
+- **Relational Database**: Uses a relational database to store user and recipe data.
+
+### Testing
+
+- **Unit Tests**: Comprehensive tests to ensure functionality of critical components.
+- **Testing Libraries**: Uses `unittest` for automated testing.
+
 ## REST API Endpoints
 
 ### Projects
@@ -38,24 +47,79 @@ The objective of this project is to create a comprehensive and feature-rich web 
   }
   ```
 
-- **Create a new project**:
+- **Login a user**:
 
-  - Endpoint: `/api-projects/`
+  - Endpoint: `/auth/login`
   - Method: `POST`
+
+  ```json
+  {
+    "email": "user1@example.com",
+    "password": "Password123!"
+  }
+  ```
+
+- **Logout a user**
+
+  - Endpoint: `/auth/logout`
+  - Method: `POST`
+
+  ```heasers
+     Authorization: Bearer <access_token>
+  ```
+
+- **List all recipes**:
+
+  - Endpoint: `/api/recipes/`
+  - Method: `GET`
+
+- **Create a new recipe** (including all tasks for the project):
+
+  - Endpoint: `/api/recipes/`
+  - Method: `POST`
+
+  ```json
+  {
+    "title": "Recipe Title",
+    "description": "Recipe Description",
+    "ingredients": "List of ingredients",
+    "instructions": "Step by step instructions"
+  }
+  ```
+
+- **View a specific recipe**
+
+  - Endpoint: `/api/recipes/<int:id>`
+  - Method: `GET`
 
 - **View a project** (including all tasks for the project):
 
   - Endpoint: `/api-projects/<int:pk>/`
   - Method: `GET`
 
-### Database Interactions
+- **Update a specific recipe**
 
-- **Relational Database**: Uses a relational database to store user and recipe data.
+  - Endpoint: `/api/recipes/<int:id>`
+  - Method: `PUT`
 
-### Testing
+  ```json
+  {
+    "title": "Updated Recipe Title",
+    "description": "Updated Recipe Description",
+    "ingredients": "Updated list of ingredients",
+    "instructions": "Updated step by step instructions"
+  }
+  ```
 
-- **Unit Tests**: Comprehensive tests to ensure functionality of critical components.
-- **Testing Libraries**: Uses `unittest` for automated testing.
+- **Delete a specific recipe**
+
+  - Endpoint: `/api/recipes/<int:id>`
+  - Method: `DELETE`
+
+- **Search receipe by title**
+
+  - Endpoint: `/api/recipes?search=pasta&page=int`
+  - Method: `GET`
 
 ## Setup Instructions
 
