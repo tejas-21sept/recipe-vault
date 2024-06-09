@@ -11,7 +11,7 @@ class RecipeAPI(MethodView):
     Recipe API class to handle CRUD operations for recipes.
     """
 
-    @jwt_required()
+    @jwt_required
     def post(self):
         """
         Create a new recipe.
@@ -33,7 +33,7 @@ class RecipeAPI(MethodView):
 
         return jsonify({"message": "Recipe created successfully"}), 201
 
-    @jwt_required()
+    @jwt_required
     def get(self, id=None):
         """
         Retrieve a recipe by ID or list recipes with pagination and search.
@@ -85,7 +85,7 @@ class RecipeAPI(MethodView):
                 }
             )
 
-    @jwt_required()
+    @jwt_required
     def put(self, id):
         """
         Update an existing recipe by ID.
@@ -108,7 +108,7 @@ class RecipeAPI(MethodView):
 
         return jsonify({"message": "Recipe updated successfully"})
 
-    @jwt_required()
+    @jwt_required
     def delete(self, id):
         """
         Delete a recipe by ID if the current user is the owner.
