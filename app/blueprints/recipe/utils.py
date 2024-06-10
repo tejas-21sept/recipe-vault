@@ -1,3 +1,5 @@
+from sqlalchemy import text
+
 from app.extensions import db
 
 
@@ -9,6 +11,6 @@ def toggle_key_checks(enable: bool):
         enable (bool): True to enable foreign key checks, False to disable.
     """
     if enable:
-        db.session.execute("SET FOREIGN_KEY_CHECKS=1")
+        db.session.execute(text("SET FOREIGN_KEY_CHECKS=0"))
     else:
-        db.session.execute("SET FOREIGN_KEY_CHECKS=0")
+        db.session.execute(text("SET FOREIGN_KEY_CHECKS=1"))
