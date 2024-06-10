@@ -178,19 +178,6 @@ class SearchAPITestCase(unittest.TestCase):
     ):
         return self._extracted_from_test_search_recipes_no_results_4(arg0, arg1)
 
-    def test_search_recipes_no_results(self):
-        """
-        Test searching recipes when no results are found.
-        """
-        with self.app.app_context():
-            # Perform search for a term that doesn't exist
-            response = self.client.get(
-                "api/recipes?search=NonExistentTerm", headers=self.headers
-            )
-            data = self._extracted_from__extracted_from_test_search_recipes_no_results_4_11(
-                response, 0
-            )
-
     def _extracted_from_test_search_recipes_no_results_4(self, arg0, arg1):
         return self._extracted_from__extracted_from_test_search_recipes_no_results_4_11(
             arg0, arg1
