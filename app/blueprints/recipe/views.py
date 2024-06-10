@@ -3,6 +3,7 @@ from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from sqlalchemy import text
 
+from app.blueprints.recipe.utils import toggle_key_checks
 from app.extensions import db
 from app.models import Ingredient, Recipe, RecipeIngredient
 
@@ -117,6 +118,7 @@ class RecipeAPI(MethodView):
             return jsonify({"message": "Invalid or missing ingredients"}), 400
 
         current_user_id = get_jwt_identity()
+        toggle_key_checks(enable=False)
 
         # Create the recipe and associate it with the current user
         recipe = Recipe(
@@ -154,6 +156,7 @@ class RecipeAPI(MethodView):
             db.session.add(ingredient)
             ingredients_list.append({"name": ingredient_name, "quantity": quantity})
 
+        toggle_key_checks(enable=True)
         db.session.commit()
 
         response_data = {
@@ -169,7 +172,6 @@ class RecipeAPI(MethodView):
             ),
             201,
         )
-
 
     @jwt_required()
     def get(self, id=None):
