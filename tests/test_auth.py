@@ -91,36 +91,19 @@ class AuthTestCase(unittest.TestCase):
         """
         Test user login with valid credentials.
         """
-        with self.app.app_context():
-            user = User(username="testuser", email="test@example.com")
-            user.set_password("testpassword")
-            db.session.add(user)
-            db.session.commit()
-
-        response = self.client.post(
-            "/auth/login",
-            data=json.dumps({"email": "test@example.com", "password": "testpassword"}),
-            content_type="application/json",
+        response = self._extracted_from_test_login_user_wrong_username_5(
+            "test@example.com", "testpassword", 200
         )
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("access_token", response.json)
+        self.assertIn("access_token", response.json['data'])
+
 
     def test_login_user_invalid(self):
         """
         Test user login with invalid credentials.
         """
-        with self.app.app_context():
-            user = User(username="testuser", email="test@example.com")
-            user.set_password("testpassword")
-            db.session.add(user)
-            db.session.commit()
-
-        response = self.client.post(
-            "/auth/login",
-            data=json.dumps({"email": "test@example.com", "password": "wrongpassword"}),
-            content_type="application/json",
+        response = self._extracted_from_test_login_user_wrong_username_5(
+            "test@example.com", "wrongpassword", 401
         )
-        self.assertEqual(response.status_code, 401)
         self.assertEqual(response.json["message"], "Invalid email or password")
 
     def test_logout_user(self):
@@ -128,17 +111,13 @@ class AuthTestCase(unittest.TestCase):
         Test user logout.
         """
         with self.app.app_context():
-            user = User(username="testuser", email="test@example.com")
-            user.set_password("testpassword")
-            db.session.add(user)
-            db.session.commit()
-
+            self._extracted_from_test_login_user_wrong_username_6()
         response = self.client.post(
             "/auth/login",
             data=json.dumps({"email": "test@example.com", "password": "testpassword"}),
             content_type="application/json",
         )
-        access_token = response.json["access_token"]
+        access_token = response.json["data"]["access_token"]
 
         response = self.client.post(
             "/auth/logout", headers={"Authorization": f"Bearer {access_token}"}
@@ -227,19 +206,29 @@ class AuthTestCase(unittest.TestCase):
         """
         Test user login with wrong username.
         """
-        with self.app.app_context():
-            user = User(username="testuser", email="test@example.com")
-            user.set_password("testpassword")
-            db.session.add(user)
-            db.session.commit()
+        response = self._extracted_from_test_login_user_wrong_username_5(
+            "wrong@example.com", "testpassword", 401
+        )
+        self.assertEqual(response.json["message"], "Invalid email or password")
 
-        response = self.client.post(
+    # TODO Rename this here and in `test_login_user`, `test_login_user_invalid`, `test_logout_user` and `test_login_user_wrong_username`
+    def _extracted_from_test_login_user_wrong_username_5(self, arg0, arg1, arg2):
+        with self.app.app_context():
+            self._extracted_from_test_login_user_wrong_username_6()
+        result = self.client.post(
             "/auth/login",
-            data=json.dumps({"email": "wrong@example.com", "password": "testpassword"}),
+            data=json.dumps({"email": arg0, "password": arg1}),
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json["message"], "Invalid email or password")
+        self.assertEqual(result.status_code, arg2)
+        return result
+
+    # TODO Rename this here and in `test_login_user`, `test_login_user_invalid`, `test_logout_user` and `test_login_user_wrong_username`
+    def _extracted_from_test_login_user_wrong_username_6(self):
+        user = User(username="testuser", email="test@example.com")
+        user.set_password("testpassword")
+        db.session.add(user)
+        db.session.commit()
 
 
 if __name__ == "__main__":

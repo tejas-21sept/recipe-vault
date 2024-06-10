@@ -50,6 +50,16 @@ class User(UserMixin, db.Model):
         """
         return str(self.id)
 
+    def to_dict(self):
+        """
+        Convert the User object to a dictionary.
+        """
+        return {
+            "id": self.id,
+            "username": self.username,
+            "email": self.email,
+        }
+
     def __repr__(self):
         """
         Get a string representation of the user.

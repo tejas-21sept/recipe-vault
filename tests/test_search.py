@@ -25,29 +25,33 @@ class SearchAPITestCase(unittest.TestCase):
         self.client = self.app.test_client()
 
         with self.app.app_context():
-            # Create a test user
-            user = User(username="testuser1", email="test1@example.com")
-            user.set_password("Testsearch@1")
-            db.session.add(user)
-            db.session.commit()
+            db.create_all()
+            self._extracted_from_setUp_14()
 
-            # Log in the test user
-            response = self.client.post(
-                "/auth/login",
-                json={"email": "test1@example.com", "password": "Testsearch@1"},
-            )
-            self.assertEqual(response.status_code, 200)
-            self.token = json.loads(response.data)["access_token"]
-            self.headers = {"Authorization": f"Bearer {self.token}"}
+    def _extracted_from_setUp_14(self):
+        # Create a test user
+        user = User(username="testuser3", email="test3@example.com")
+        user.set_password("Testsearch@1")
+        db.session.add(user)
+        db.session.commit()
 
-            # Create a recipe
-            recipe = Recipe(
-                title="Your Recipe Title",
-                description="Your Recipe Description",
-                user_id=user.id,
-            )
-            db.session.add(recipe)
-            db.session.commit()
+        # Log in the test user
+        response = self.client.post(
+            "/auth/login",
+            json={"email": "test3@example.com", "password": "Testsearch@1"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.token = json.loads(response.data)["data"]["access_token"]
+        self.headers = {"Authorization": f"Bearer {self.token}"}
+
+        # Create a recipe
+        recipe = Recipe(
+            title="Your Recipe Title",
+            description="Your Recipe Description",
+            user_id=user.id,
+        )
+        db.session.add(recipe)
+        db.session.commit()
 
     def tearDown(self):
         """
@@ -103,7 +107,6 @@ class SearchAPITestCase(unittest.TestCase):
             response = self.client.get(
                 "/api/recipes?search=Spaghetti&page=1",
                 headers=self.headers,
-                # postman running - http://127.0.0.1:5000/api/recipes?search=pasta&page=1
             )
             self._check_search_response(response, 1)
 
@@ -140,36 +143,6 @@ class SearchAPITestCase(unittest.TestCase):
                 response, expected_count
             )
 
-    def _extracted_from_test_search_recipes_10(self, arg0, arg1):
-        return self._extracted_from__extracted_from_test_search_recipes_50_3(
-            arg0, arg1
-        )
-
-    def _extracted_from_test_search_recipes_50(self):
-        # Create some sample recipes for testing
-        self._create_sample_recipes()
-
-        # Perform search for existing title
-        result = self.client.get("/api/recipes?search=Spaghetti", headers=self.headers)
-        data = self._extracted_from_test_search_recipes_56(result, 1)
-        # Perform search for existing ingredient
-        result = self.client.get("/api/recipes?search=Pancetta", headers=self.headers)
-        data = self._extracted_from_test_search_recipes_56(result, 1)
-        return self._extracted_from__extracted_from_test_search_recipes_50_3(
-            "/api/recipes?search=NonExistent", 0
-        )
-
-    # TODO Rename this here and in `_extracted_from_test_search_recipes_10` and `_extracted_from_test_search_recipes_50`
-    def _extracted_from__extracted_from_test_search_recipes_50_3(self, arg0, arg1):
-        result = self.client.get(arg0, headers=self.headers)
-        data = self._extracted_from_test_search_recipes_56(result, arg1)
-        return result
-
-    def _extracted_from_test_search_recipes_56(self, response, arg1):
-        return self._extracted_from__extracted_from_test_search_recipes_56_5(
-            response, arg1
-        )
-
     def _extracted_from__extracted_from_test_search_recipes_56_5(self, response, arg1):
         return self._extracted_from__extracted_from__extracted_from_test_search_recipes_56_5_11(
             response, arg1
@@ -190,7 +163,7 @@ class SearchAPITestCase(unittest.TestCase):
     ):
         self.assertEqual(arg0.status_code, 200)
         result = json.loads(arg0.data)
-        self.assertEqual(len(result["recipes"]), arg1)
+        self.assertEqual(len(result["data"]["recipes"]), arg1)
         return result
 
     def test_search_redirect(self):
@@ -198,13 +171,14 @@ class SearchAPITestCase(unittest.TestCase):
             "/api/recipes?search=NonExistentTerm",
             headers=self.headers,
         )
+
         if response.status_code == 308:
             redirected_response = self.client.get(
                 response.headers["Location"], headers=self.headers
             )
             self.assertEqual(redirected_response.status_code, 200)
         else:
-            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.status_code, 308)
 
 
 if __name__ == "__main__":
