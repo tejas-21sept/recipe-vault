@@ -89,7 +89,10 @@ class Recipe(db.Model):
         Delete the recipe and its associated RecipeIngredient records.
         """
         # Delete associated RecipeIngredient records
-        RecipeIngredient.query.filter_by(recipe_id=self.id).delete()
+        recipe_ingredients = RecipeIngredient.query.filter_by(recipe_id=self.id).all()
+        for recipe_ingredient in recipe_ingredients:
+            db.session.delete(recipe_ingredient)
+
         # Then delete the recipe
         db.session.delete(self)
         db.session.commit()
