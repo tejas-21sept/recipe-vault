@@ -168,13 +168,15 @@ class RecipeAPI(MethodView):
         if recipe := Recipe.query.get(id):
             db.session.delete(recipe)
             db.session.commit()
-            message = {"message": "Recipe deleted successfully"}
+            message = {"message": "Recipe deleted successfully", "id": id}
+            status_code = 200
         else:
-            message = {"message": "Recipe not found"}
+            message = {"message": f"Recipe with id {id} not found", "id": id}
+            status_code = 404
 
         toggle_key_checks(enable=True)
 
-        return jsonify(message), 200
+        return jsonify(message), status_code
 
     @jwt_required()
     def put(self, id):
