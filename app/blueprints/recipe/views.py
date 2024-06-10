@@ -254,14 +254,21 @@ class RecipeAPI(MethodView):
         """
         Delete a recipe by ID.
         """
+        # Query the recipe by ID
         recipe = Recipe.query.get(id)
         if not recipe:
             return jsonify({"message": f"Recipe with id {id} not found"}), 404
 
-        # First, delete the related entries in the association table
-        RecipeIngredient.query.filter_by(recipe_id=id).delete()
-        # Then delete the recipe
-        db.session.delete(recipe)
-        db.session.commit()
+        try:
+            # Delete associated records from RecipeIngredient table
+            RecipeIngredient.query.filter_by(recipe_id=id).delete()
 
-        return jsonify({"message": "Recipe deleted successfully"}), 200
+            # Then delete the recipe itself
+            db.session.delete(recipe)
+            db.session.commit()
+
+            return jsonify({"message": "Recipe deleted successfully"}), 200
+        except Exception as e:
+            # Handle any exceptions that may occur during deletion
+            db.session.rollback()
+            return jsonify({"message": f"Failed to delete recipe: {str(e)}"}), 500
