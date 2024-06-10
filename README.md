@@ -177,7 +177,14 @@ The objective of this project is to create a comprehensive and feature-rich web 
   pip install -r requirements.txt
 ```
 
-4. **Run the migrations**:
+4. **Create databases**:
+
+Create two databases in any relational databases (eg MySQL, PostgreSQL etc).
+
+5. **Create a .env file:**:
+   Create a .env file in the root directory of your project, copy the contents of .env.example into it and add yout secret credentials in it.
+
+6. **Run the migrations**:
 
    ```python
        flask db init
@@ -186,16 +193,16 @@ The objective of this project is to create a comprehensive and feature-rich web 
 
    ```
 
-5. **Create a .env file:**:
+7. **Create a .env file:**:
    Create a .env file in the root directory of your project, copy the contents of .env.example into it and add yout secret credentials in it.
 
-6. **Start the development server**:
+8. **Start the development server**:
 
    ```python
        flask run
    ```
 
-7. **Testing the apis**:
+9. **Testing the apis**:
 
    ```python
          # For Windows
