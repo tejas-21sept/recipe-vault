@@ -170,31 +170,65 @@ class RecipeAPI(MethodView):
         Expects JSON body with updated title, description, and ingredients.
         """
         data = request.get_json()
+
+        # Validate input data
+        if not data or not isinstance(data, dict):
+            return jsonify({"message": "Invalid JSON data"}), 400
+
+        # Validate recipe existence
         recipe = Recipe.query.get(id)
         if not recipe:
             return jsonify({"message": f"Recipe with id {id} not found"}), 404
 
-        recipe.title = data.get("title", recipe.title)
-        recipe.description = data.get("description", recipe.description)
+        # Validate and update title
+        if "title" in data:
+            if not isinstance(data["title"], str) or not data["title"].strip():
+                return jsonify({"message": "Invalid or missing title"}), 400
+            recipe.title = data["title"]
 
-        # Delete existing ingredients and add new ones
-        RecipeIngredient.query.filter_by(recipe_id=id).delete()
-        for ingredient_data in data.get("ingredients", []):
-            ingredient_name = ingredient_data["name"]
-            quantity = ingredient_data["quantity"]
+        # Validate and update description
+        if "description" in data:
+            if (
+                not isinstance(data["description"], str)
+                or not data["description"].strip()
+            ):
+                return jsonify({"message": "Invalid or missing description"}), 400
+            recipe.description = data["description"]
 
-            # Check if ingredient already exists
-            ingredient = Ingredient.query.filter_by(name=ingredient_name).first()
-            if not ingredient:
-                ingredient = Ingredient(name=ingredient_name)
-                db.session.add(ingredient)
-                db.session.flush()  # Get ingredient.id before committing
+        # Validate ingredients
+        if "ingredients" in data:
+            if not isinstance(data["ingredients"], list) or not data["ingredients"]:
+                return jsonify({"message": "Invalid or missing ingredients"}), 400
 
-            # Create association with quantity
-            recipe_ingredient = RecipeIngredient(
-                recipe_id=recipe.id, ingredient_id=ingredient.id, quantity=quantity
-            )
-            db.session.add(recipe_ingredient)
+            # Delete existing ingredients and add new ones
+            RecipeIngredient.query.filter_by(recipe_id=id).delete()
+            for ingredient_data in data["ingredients"]:
+                if (
+                    not isinstance(ingredient_data.get("name"), str)
+                    or not ingredient_data["name"].strip()
+                ):
+                    return jsonify({"message": "Invalid ingredient name"}), 400
+                if (
+                    not isinstance(ingredient_data.get("quantity"), str)
+                    or not ingredient_data["quantity"].strip()
+                ):
+                    return jsonify({"message": "Invalid ingredient quantity"}), 400
+
+                ingredient_name = ingredient_data["name"]
+                quantity = ingredient_data["quantity"]
+
+                # Check if ingredient already exists
+                ingredient = Ingredient.query.filter_by(name=ingredient_name).first()
+                if not ingredient:
+                    ingredient = Ingredient(name=ingredient_name)
+                    db.session.add(ingredient)
+                    db.session.flush()  # Get ingredient.id before committing
+
+                # Create association with quantity
+                recipe_ingredient = RecipeIngredient(
+                    recipe_id=recipe.id, ingredient_id=ingredient.id, quantity=quantity
+                )
+                db.session.add(recipe_ingredient)
 
         db.session.commit()
 
