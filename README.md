@@ -137,7 +137,6 @@ The objective of this project is to create a comprehensive and feature-rich web 
 
    ```sh
    git clone https://github.com/tejas-21sept/recipe-vault.git
-   cd recipe-vault
 
    ```
 
