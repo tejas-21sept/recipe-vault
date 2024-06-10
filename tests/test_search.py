@@ -141,10 +141,9 @@ class SearchAPITestCase(unittest.TestCase):
             )
 
     def _extracted_from_test_search_recipes_10(self, arg0, arg1):
-        # Perform search for existing title
-        result = self.client.get(arg0, headers=self.headers)
-        data = self._extracted_from_test_search_recipes_56(result, arg1)
-        return result
+        return self._extracted_from__extracted_from_test_search_recipes_50_3(
+            arg0, arg1
+        )
 
     def _extracted_from_test_search_recipes_50(self):
         # Create some sample recipes for testing
@@ -156,11 +155,14 @@ class SearchAPITestCase(unittest.TestCase):
         # Perform search for existing ingredient
         result = self.client.get("/api/recipes?search=Pancetta", headers=self.headers)
         data = self._extracted_from_test_search_recipes_56(result, 1)
-        # Perform search for non-existent term
-        result = self.client.get(
-            "/api/recipes?search=NonExistent", headers=self.headers
+        return self._extracted_from__extracted_from_test_search_recipes_50_3(
+            "/api/recipes?search=NonExistent", 0
         )
-        data = self._extracted_from_test_search_recipes_56(result, 0)
+
+    # TODO Rename this here and in `_extracted_from_test_search_recipes_10` and `_extracted_from_test_search_recipes_50`
+    def _extracted_from__extracted_from_test_search_recipes_50_3(self, arg0, arg1):
+        result = self.client.get(arg0, headers=self.headers)
+        data = self._extracted_from_test_search_recipes_56(result, arg1)
         return result
 
     def _extracted_from_test_search_recipes_56(self, response, arg1):
