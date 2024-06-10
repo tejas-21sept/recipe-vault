@@ -57,6 +57,19 @@ class User(UserMixin, db.Model):
         return f"<User {self.username}>"
 
 
+class RecipeIngredient(db.Model):
+    """
+    Association table for many-to-many relationship between Recipe and Ingredient.
+    """
+
+    __tablename__ = "recipe_ingredient"
+    recipe_id = db.Column(db.Integer, db.ForeignKey("recipe.id"), primary_key=True)
+    ingredient_id = db.Column(
+        db.Integer, db.ForeignKey("ingredient.id"), primary_key=True
+    )
+    quantity = db.Column(db.String(64))
+
+
 class Recipe(db.Model):
     """
     Recipe model for storing recipe-related data.
@@ -68,7 +81,9 @@ class Recipe(db.Model):
     instructions = db.Column(db.Text)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     ingredients = db.relationship(
-        "Ingredient", backref="recipe", lazy=True, cascade="all, delete-orphan"
+        "Ingredient",
+        secondary="recipe_ingredient",
+        backref=db.backref("recipes", lazy=True),
     )
 
     def __repr__(self):
@@ -88,8 +103,6 @@ class Ingredient(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), nullable=False)
-    quantity = db.Column(db.String(64))
-    recipe_id = db.Column(db.Integer, db.ForeignKey("recipe.id"), nullable=False)
 
     def __repr__(self):
         """
