@@ -5,16 +5,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from app.extensions import db
 
-# Association table for many-to-many relationship
-recipe_ingredient_association = db.Table(
-    "recipe_ingredient",
-    db.Column("recipe_id", db.Integer, db.ForeignKey("recipe.id"), primary_key=True),
-    db.Column(
-        "ingredient_id", db.Integer, db.ForeignKey("ingredient.id"), primary_key=True
-    ),
-    db.Column("quantity", db.String(64)),
-)
-
 
 class User(UserMixin, db.Model):
     """
@@ -77,14 +67,10 @@ class Recipe(db.Model):
     description = db.Column(db.Text)
     instructions = db.Column(db.Text)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-
-    # Setting up the many-to-many relationship
     ingredients = db.relationship(
         "Ingredient",
-        secondary=recipe_ingredient_association,
+        secondary="recipe_ingredient",
         backref=db.backref("recipes", lazy=True),
-        cascade="all, delete-orphan",
-        single_parent=True,
     )
 
     def __repr__(self):
@@ -113,3 +99,16 @@ class Ingredient(db.Model):
             str: A string representation of the ingredient.
         """
         return f"<Ingredient {self.name}>"
+
+
+class RecipeIngredient(db.Model):
+    """
+    Association table for many-to-many relationship between Recipe and Ingredient.
+    """
+
+    __tablename__ = "recipe_ingredient"
+    recipe_id = db.Column(db.Integer, db.ForeignKey("recipe.id"), primary_key=True)
+    ingredient_id = db.Column(
+        db.Integer, db.ForeignKey("ingredient.id"), primary_key=True
+    )
+    quantity = db.Column(db.String(64))
