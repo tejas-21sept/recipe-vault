@@ -1,12 +1,27 @@
+# Ignore IDE and editor configurations
 .idea/
 .vscode/
+
+# Ignore virtual environments
 .venv*/
 venv*/
+
+# Ignore Python cache files
 __pycache__/
+
+# Ignore distribution directories
 dist/
+
+# Ignore coverage reports
 .coverage*
 htmlcov/
+
+# Ignore tox environments
 .tox/
+
+# Ignore build directories for Sphinx documentation
 docs/_build/
+
+# Ignore environment variable files
 .flaskenv
 .env
