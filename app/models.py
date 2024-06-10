@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from flask_login import UserMixin
+from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from app.extensions import db
@@ -71,7 +72,7 @@ class Recipe(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     ingredients = relationship(
         "Ingredient", backref="recipe", cascade="all, delete-orphan"
-    ) 
+    )
 
     def __repr__(self):
         """
