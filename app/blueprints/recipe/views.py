@@ -1,6 +1,7 @@
 from flask import current_app, jsonify, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, jwt_required
+from sqlalchemy import text
 
 from app.extensions import db
 from app.models import Ingredient, Recipe, RecipeIngredient
@@ -164,11 +165,11 @@ class RecipeAPI(MethodView):
         )
 
     @jwt_required()
-    def delete(self, recipe_id):
+    def delete(self, id):
         # Disable foreign key checks
-        db.session.execute("SET FOREIGN_KEY_CHECKS=0")
+        db.session.execute(text("SET FOREIGN_KEY_CHECKS=0"))
 
-        if recipe := Recipe.query.get(recipe_id):
+        if recipe := Recipe.query.get(id):
             db.session.delete(recipe)
             db.session.commit()
             message = {"message": "Recipe deleted successfully"}
@@ -176,6 +177,6 @@ class RecipeAPI(MethodView):
             message = {"message": "Recipe not found"}
 
         # Re-enable foreign key checks
-        db.session.execute("SET FOREIGN_KEY_CHECKS=1")
+        db.session.execute(text("SET FOREIGN_KEY_CHECKS=1"))
 
         return jsonify(message), 200
