@@ -249,26 +249,19 @@ class RecipeAPI(MethodView):
             200,
         )
 
-    @jwt_required()
-    def delete(self, id):
-        """
-        Delete a recipe by ID.
-        """
-        # Query the recipe by ID
-        recipe = Recipe.query.get(id)
-        if not recipe:
-            return jsonify({"message": f"Recipe with id {id} not found"}), 404
+    @app.route("/api/recipes/<int:id>", methods=["DELETE"])
+    def delete_recipe(id):
+        # Disable foreign key checks
+        db.session.execute("SET FOREIGN_KEY_CHECKS=0")
 
-        try:
-            # Delete associated records from RecipeIngredient table
-            RecipeIngredient.query.filter_by(recipe_id=id).delete()
-
-            # Then delete the recipe itself
+        if recipe := Recipe.query.get(id):
             db.session.delete(recipe)
             db.session.commit()
+            message = {"message": "Recipe deleted successfully"}
+        else:
+            message = {"message": "Recipe not found"}
 
-            return jsonify({"message": "Recipe deleted successfully"}), 200
-        except Exception as e:
-            # Handle any exceptions that may occur during deletion
-            db.session.rollback()
-            return jsonify({"message": f"Failed to delete recipe: {str(e)}"}), 500
+        # Re-enable foreign key checks
+        db.session.execute("SET FOREIGN_KEY_CHECKS=1")
+
+        return jsonify(message), 200
