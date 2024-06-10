@@ -69,11 +69,9 @@ class Recipe(db.Model):
     description = db.Column(db.Text)
     instructions = db.Column(db.Text)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    ingredients = db.relationship(
-        "Ingredient",
-        secondary="recipe_ingredient",
-        backref=db.backref("recipes", lazy=True),
-    )
+    ingredients = relationship(
+        "Ingredient", backref="recipe", cascade="all, delete-orphan"
+    ) 
 
     def __repr__(self):
         """
