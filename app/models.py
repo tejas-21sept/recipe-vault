@@ -73,7 +73,6 @@ class Recipe(db.Model):
         "Ingredient",
         secondary="recipe_ingredient",
         backref=db.backref("recipes", lazy=True),
-        cascade="all, delete-orphan",
     )
 
     def __repr__(self):
@@ -84,6 +83,16 @@ class Recipe(db.Model):
             str: A string representation of the recipe.
         """
         return f"<Recipe {self.title}>"
+
+    def delete(self):
+        """
+        Delete the recipe and its associated RecipeIngredient records.
+        """
+        # Delete associated RecipeIngredient records
+        RecipeIngredient.query.filter_by(recipe_id=self.id).delete()
+        # Then delete the recipe
+        db.session.delete(self)
+        db.session.commit()
 
 
 class Ingredient(db.Model):
